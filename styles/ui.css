@@ -1,0 +1,1624 @@
+/* ==========================================================================
+   VOID LANCE — interface skin.
+   The battlefield is WebGL; everything textual is DOM on top of it, so type
+   stays crisp at any zoom and the HUD can be read by assistive tech.
+   ========================================================================== */
+
+:root {
+  --void: #04080e;
+  --ink: #070d15;
+  --panel: rgba(9, 17, 27, 0.86);
+  --panel-2: rgba(12, 22, 34, 0.92);
+  --line: rgba(103, 158, 199, 0.3);
+  --line-soft: rgba(103, 158, 199, 0.16);
+  --text: #d3e6f5;
+  --dim: #7f9bb2;
+  --dimmer: #5b7691;
+  --cyan: #4fd6ff;
+  --amber: #ffc45c;
+  --red: #ff5a68;
+  --good: #7dffb1;
+  --purple: #b98cff;
+  --display: "Bahnschrift", "DIN Alternate", "Roboto Condensed", "Arial Narrow", system-ui, sans-serif;
+  --body: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+  --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--void);
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+#stage {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  cursor: crosshair;
+  z-index: 0;
+}
+
+.vl-root,
+.vl-screens {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+.vl-root {
+  z-index: 10;
+  transition: opacity 0.28s ease;
+}
+
+/* Screens are full-bleed: the HUD must not bleed through the translucent backdrop. */
+body.vl-screen-up .vl-root {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.vl-screens {
+  z-index: 40;
+}
+
+.vl-screens.is-visible {
+  pointer-events: auto;
+}
+
+/* The HUD only takes clicks on its own furniture, never over open space. */
+.vl-top,
+.vl-inspector,
+.vl-log,
+.vl-actions,
+.vl-strip {
+  pointer-events: auto;
+}
+
+.vl-root.is-locked .vl-btn,
+.vl-root.is-locked .vl-weapon,
+.vl-root.is-locked .vl-card,
+.vl-root.is-locked .vl-pip {
+  pointer-events: none;
+}
+
+.vl-muted {
+  color: var(--dim);
+}
+
+.vl-good {
+  color: var(--good);
+}
+
+.vl-warn {
+  color: var(--amber);
+}
+
+.vl-danger {
+  color: var(--red);
+}
+
+/* ------------------------------------------------------------------ booting */
+
+.vl-boot {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  padding: 24px;
+}
+
+.vl-boot-title {
+  font-family: var(--display);
+  font-size: clamp(28px, 6vw, 56px);
+  letter-spacing: 0.42em;
+  margin: 0;
+  color: var(--cyan);
+  text-shadow: 0 0 30px rgba(79, 214, 255, 0.35);
+}
+
+.vl-boot-note {
+  margin: 0;
+  color: var(--dim);
+  max-width: 46ch;
+}
+
+/* ------------------------------------------------------------------- top bar */
+
+.vl-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 14px;
+  background: linear-gradient(180deg, rgba(4, 9, 15, 0.94) 0%, rgba(4, 9, 15, 0.62) 62%, rgba(4, 9, 15, 0) 100%);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.vl-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+
+.vl-brand-mark {
+  color: var(--cyan);
+  font-size: 13px;
+  text-shadow: 0 0 12px rgba(79, 214, 255, 0.7);
+}
+
+.vl-brand-text {
+  font-family: var(--display);
+  font-size: 17px;
+  letter-spacing: 0.3em;
+  color: #eaf6ff;
+}
+
+.vl-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+
+.vl-chip {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  padding: 4px 9px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  color: var(--dim);
+  background: rgba(10, 20, 32, 0.7);
+  white-space: nowrap;
+}
+
+.vl-chip-phase.is-player {
+  color: #061019;
+  background: var(--cyan);
+  border-color: var(--cyan);
+  box-shadow: 0 0 18px rgba(79, 214, 255, 0.35);
+}
+
+.vl-chip-phase.is-enemy {
+  color: #16060a;
+  background: var(--red);
+  border-color: var(--red);
+  box-shadow: 0 0 18px rgba(255, 90, 104, 0.35);
+}
+
+.vl-fleets {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: center;
+}
+
+.vl-fleet {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.vl-fleet-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--dimmer);
+}
+
+.vl-fleet-player .vl-fleet-label {
+  color: #6fb9dd;
+}
+
+.vl-fleet-enemy .vl-fleet-label {
+  color: #d97f86;
+}
+
+.vl-bar {
+  position: relative;
+  height: 5px;
+  width: 96px;
+  background: rgba(120, 170, 210, 0.14);
+  border: 1px solid var(--line-soft);
+  overflow: hidden;
+  flex: none;
+}
+
+.vl-bar > i {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #2b7f9e, var(--cyan));
+  transition: width 0.35s ease;
+}
+
+.vl-fleet-enemy .vl-bar > i {
+  background: linear-gradient(90deg, #8e3440, var(--red));
+}
+
+.vl-pips {
+  display: flex;
+  gap: 3px;
+}
+
+.vl-pip {
+  position: relative;
+  width: 26px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--line-soft);
+  background: rgba(9, 18, 28, 0.8);
+  color: var(--text);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.vl-pip:hover {
+  border-color: var(--cyan);
+}
+
+.vl-pip-glyph {
+  font-size: 11px;
+  line-height: 22px;
+  color: #a9d5ef;
+}
+
+.vl-pip-hull {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--cyan);
+}
+
+.vl-fleet-enemy .vl-pip-hull {
+  background: var(--red);
+}
+
+.vl-pip.is-acted {
+  opacity: 0.5;
+}
+
+.vl-pip.is-dead {
+  opacity: 0.28;
+  border-style: dashed;
+}
+
+.vl-pip.is-dead .vl-pip-glyph {
+  color: var(--red);
+}
+
+.vl-pip.is-selected {
+  border-color: var(--amber);
+  box-shadow: inset 0 0 0 1px rgba(255, 196, 92, 0.5);
+}
+
+.vl-tools {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+
+/* ------------------------------------------------------------------ buttons */
+
+.vl-btn {
+  font-family: var(--display);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text);
+  background: rgba(14, 26, 40, 0.9);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.14s ease, border-color 0.14s ease, color 0.14s ease, transform 0.08s ease;
+}
+
+.vl-btn:hover:not(:disabled) {
+  background: rgba(28, 54, 78, 0.95);
+  border-color: var(--cyan);
+  color: #eaf9ff;
+}
+
+.vl-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.vl-btn:focus-visible {
+  outline: 1px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+.vl-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.vl-tool {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  padding: 6px 8px;
+  text-transform: none;
+  color: #a8c9de;
+}
+
+.vl-tool.is-off {
+  color: var(--dimmer);
+  border-color: var(--line-soft);
+}
+
+.vl-tool.is-on {
+  color: var(--red);
+  border-color: rgba(255, 90, 104, 0.55);
+}
+
+.vl-btn-primary {
+  background: linear-gradient(180deg, #1c6f92, #0e3d55);
+  border-color: rgba(79, 214, 255, 0.6);
+  color: #ecfbff;
+  font-size: 14px;
+  padding: 12px 26px;
+  letter-spacing: 0.24em;
+}
+
+.vl-btn-primary:hover:not(:disabled) {
+  background: linear-gradient(180deg, #2489b1, #12556f);
+  box-shadow: 0 0 26px rgba(79, 214, 255, 0.3);
+}
+
+.vl-btn-ghost {
+  background: transparent;
+  border-color: var(--line);
+  color: var(--dim);
+  font-size: 13px;
+  padding: 12px 20px;
+}
+
+.vl-btn-ghost:hover:not(:disabled) {
+  color: var(--text);
+}
+
+/* ---------------------------------------------------------------- inspector */
+
+.vl-inspector {
+  position: absolute;
+  top: 70px;
+  right: 12px;
+  width: 344px;
+  max-height: calc(100vh - 196px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--panel);
+  border: 1px solid var(--line-soft);
+  border-radius: 3px;
+  padding: 12px 13px 14px;
+  backdrop-filter: blur(7px);
+}
+
+.vl-inspector::-webkit-scrollbar {
+  width: 7px;
+}
+
+.vl-inspector::-webkit-scrollbar-thumb {
+  background: rgba(103, 158, 199, 0.3);
+}
+
+.vl-insp-empty {
+  text-align: center;
+  color: var(--dim);
+  padding: 26px 12px;
+}
+
+.vl-insp-empty-glyph {
+  font-size: 30px;
+  color: var(--dimmer);
+  margin-bottom: 8px;
+}
+
+.vl-insp-empty p {
+  margin: 4px 0;
+}
+
+.vl-insp-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.vl-insp-glyph {
+  --accent: var(--cyan);
+  font-size: 24px;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  border-radius: 3px;
+  box-shadow: inset 0 0 18px rgba(79, 214, 255, 0.14);
+}
+
+.vl-insp-titles {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.vl-insp-name {
+  font-family: var(--display);
+  font-size: 19px;
+  letter-spacing: 0.1em;
+  margin: 0;
+  color: #f0f9ff;
+}
+
+.vl-insp-class {
+  margin: 1px 0 0;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.vl-tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  padding: 3px 6px;
+  border: 1px solid var(--line);
+  color: var(--dim);
+}
+
+.vl-tag-dim {
+  opacity: 0.7;
+}
+
+.vl-insp-bars {
+  padding: 10px 0 8px;
+  display: grid;
+  gap: 5px;
+}
+
+.vl-statbar {
+  display: grid;
+  grid-template-columns: 52px 1fr 62px;
+  align-items: center;
+  gap: 8px;
+}
+
+.vl-statbar-k {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--dimmer);
+}
+
+.vl-statbar .vl-bar {
+  width: auto;
+  height: 8px;
+}
+
+.vl-statbar-v {
+  font-family: var(--mono);
+  font-size: 11px;
+  text-align: right;
+  color: var(--text);
+}
+
+.vl-statbar.is-critical .vl-bar > i {
+  background: linear-gradient(90deg, #7e2530, var(--red));
+}
+
+.vl-statbar.is-shield .vl-bar > i {
+  background: linear-gradient(90deg, #2f6f5a, var(--good));
+}
+
+.vl-insp-stats {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.vl-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.vl-stat-k {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  color: var(--dimmer);
+}
+
+.vl-stat-v {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: #dcedf9;
+}
+
+.vl-status-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding-top: 8px;
+}
+
+.vl-status {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  padding: 2px 6px;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+}
+
+.vl-status-jammed {
+  color: var(--red);
+}
+
+.vl-status-locked {
+  color: var(--amber);
+}
+
+.vl-status-fortified {
+  color: var(--cyan);
+}
+
+.vl-status-overdrive {
+  color: var(--purple);
+}
+
+.vl-status-saturation {
+  color: var(--good);
+}
+
+.vl-section-title {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--dimmer);
+  padding: 10px 0 6px;
+}
+
+/* ------------------------------------------------------------------ weapons */
+
+.vl-weapons,
+.vl-system {
+  display: block;
+}
+
+.vl-weapon {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: rgba(11, 21, 33, 0.7);
+  border: 1px solid var(--line-soft);
+  border-left: 2px solid rgba(103, 158, 199, 0.35);
+  border-radius: 2px;
+  color: var(--text);
+  padding: 7px 9px 8px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.14s ease, background 0.14s ease;
+}
+
+.vl-weapon:hover:not(.is-disabled) {
+  background: rgba(20, 38, 57, 0.9);
+  border-left-color: var(--amber);
+}
+
+.vl-weapon.is-disabled {
+  opacity: 0.42;
+  cursor: default;
+}
+
+.vl-weapon-top {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.vl-weapon-top.is-pending {
+  color: var(--amber);
+}
+
+.vl-weapon-kind {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  color: #061019;
+  background: #7ea9c4;
+  padding: 1px 5px;
+  text-transform: uppercase;
+  flex: none;
+}
+
+.vl-weapon-name {
+  font-family: var(--display);
+  font-size: 14px;
+  letter-spacing: 0.07em;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.vl-weapon-state {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--dimmer);
+  flex: none;
+}
+
+.vl-weapon-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 5px;
+}
+
+.vl-chipm {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  padding: 1px 5px;
+  border: 1px solid var(--line-soft);
+  color: var(--dim);
+  white-space: nowrap;
+}
+
+.vl-chipm.dmg {
+  color: #ffcf8f;
+  border-color: rgba(255, 196, 92, 0.35);
+}
+
+.vl-chipm.rng {
+  color: #9fd4f2;
+}
+
+.vl-chipm.arc {
+  color: #c6b4ff;
+}
+
+.vl-chipm.acc {
+  color: #a8e6c4;
+}
+
+.vl-chipm.pods {
+  color: #ffaad8;
+}
+
+.vl-chipm.burn {
+  color: #ff9c8a;
+}
+
+.vl-weapon-aim {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  margin-top: 6px;
+  padding-top: 5px;
+  border-top: 1px dashed var(--line-soft);
+  font-size: 11px;
+  color: var(--dim);
+}
+
+.vl-weapon-aim b {
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--amber);
+}
+
+.vl-weapon-note {
+  margin: 5px 0 0;
+  font-size: 11px;
+  color: var(--dim);
+  line-height: 1.35;
+}
+
+.vl-system {
+  background: rgba(16, 14, 30, 0.7);
+  border: 1px solid rgba(185, 140, 255, 0.25);
+  border-radius: 2px;
+  padding: 8px 9px 9px;
+  margin-top: 4px;
+}
+
+.vl-system .vl-weapon-kind {
+  background: #a88cf0;
+}
+
+.vl-insp-blurb {
+  margin: 12px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--line-soft);
+  font-size: 11.5px;
+  color: var(--dim);
+  line-height: 1.5;
+}
+
+/* ---------------------------------------------------------------------- log */
+
+.vl-log {
+  position: absolute;
+  left: 12px;
+  bottom: 128px;
+  width: 344px;
+  height: 216px;
+  display: flex;
+  flex-direction: column;
+  background: rgba(6, 12, 20, 0.72);
+  border: 1px solid var(--line-soft);
+  border-radius: 3px;
+  backdrop-filter: blur(4px);
+}
+
+.vl-log-title {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--dimmer);
+  padding: 6px 9px;
+  border-bottom: 1px solid var(--line-soft);
+  flex: none;
+}
+
+.vl-log-body {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 5px 9px 7px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  scrollbar-width: thin;
+}
+
+.vl-log-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.vl-log-body::-webkit-scrollbar-thumb {
+  background: rgba(103, 158, 199, 0.28);
+}
+
+.vl-logline {
+  padding: 1px 0;
+  color: var(--dim);
+  border-left: 2px solid transparent;
+  padding-left: 7px;
+  margin-left: -7px;
+}
+
+.vl-log-info {
+  color: #94aec3;
+}
+
+.vl-log-player {
+  color: #8fd7ff;
+  border-left-color: rgba(79, 214, 255, 0.5);
+}
+
+.vl-log-enemy {
+  color: #ff9fa8;
+  border-left-color: rgba(255, 90, 104, 0.5);
+}
+
+.vl-log-good {
+  color: var(--good);
+  border-left-color: rgba(125, 255, 177, 0.5);
+}
+
+.vl-log-bad {
+  color: #ff7b86;
+}
+
+.vl-log-kill {
+  color: #ffd27a;
+  border-left-color: var(--amber);
+  font-weight: 600;
+}
+
+.vl-log-system {
+  color: #c4b0ff;
+}
+
+/* ------------------------------------------------------------------ actions */
+
+.vl-actions {
+  position: absolute;
+  left: 50%;
+  bottom: 96px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.vl-act-row {
+  display: flex;
+  gap: 6px;
+}
+
+.vl-act {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  padding: 10px 14px;
+  background: rgba(12, 24, 38, 0.92);
+}
+
+.vl-act-system {
+  border-color: rgba(185, 140, 255, 0.4);
+  color: #d6c6ff;
+}
+
+.vl-act-end {
+  border-color: rgba(255, 196, 92, 0.55);
+  color: #ffe0a8;
+  padding: 10px 20px;
+}
+
+.vl-act-end:hover:not(:disabled) {
+  background: rgba(60, 44, 16, 0.95);
+  border-color: var(--amber);
+}
+
+.vl-hint {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 12px);
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  color: var(--dim);
+  background: rgba(5, 11, 18, 0.78);
+  border: 1px solid var(--line-soft);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.vl-hint.is-alert {
+  color: #061019;
+  background: var(--amber);
+  border-color: var(--amber);
+}
+
+/* --------------------------------------------------------------- ship strip */
+
+.vl-strip {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+}
+
+.vl-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 158px;
+  padding: 7px 9px;
+  text-align: left;
+  background: rgba(8, 16, 26, 0.86);
+  border: 1px solid var(--line-soft);
+  border-radius: 3px;
+  color: var(--text);
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.14s ease, transform 0.1s ease, background 0.14s ease;
+}
+
+.vl-card:hover {
+  border-color: var(--cyan);
+  background: rgba(16, 32, 48, 0.92);
+}
+
+.vl-card.is-selected {
+  border-color: var(--amber);
+  box-shadow: 0 0 0 1px rgba(255, 196, 92, 0.35), 0 0 22px rgba(255, 196, 92, 0.12);
+}
+
+.vl-card.is-acted {
+  opacity: 0.55;
+}
+
+.vl-card.is-dead {
+  opacity: 0.3;
+  cursor: default;
+  border-style: dashed;
+}
+
+.vl-card-key {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--dimmer);
+  border: 1px solid var(--line-soft);
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.vl-card-glyph {
+  font-size: 16px;
+  color: var(--cyan);
+  flex: none;
+  width: 18px;
+  text-align: center;
+}
+
+.vl-card-body {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.vl-card-name {
+  display: block;
+  font-family: var(--display);
+  font-size: 12.5px;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vl-card-bar {
+  position: relative;
+  height: 4px;
+  margin-top: 4px;
+  background: rgba(120, 170, 210, 0.14);
+  overflow: hidden;
+}
+
+.vl-card-bar > i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  height: 100%;
+  background: linear-gradient(90deg, #2b7f9e, #6fd8ff);
+}
+
+.vl-card-bar > .vl-card-shield {
+  top: auto;
+  height: 2px;
+  background: var(--good);
+  opacity: 0.9;
+}
+
+/* ----------------------------------------------------------- aim readout */
+
+.vl-aim {
+  position: absolute;
+  width: 264px;
+  pointer-events: none;
+  background: rgba(6, 13, 21, 0.94);
+  border: 1px solid rgba(255, 196, 92, 0.45);
+  border-radius: 3px;
+  padding: 9px 10px 8px;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.55);
+  z-index: 30;
+}
+
+.vl-aim.is-hidden {
+  display: none;
+}
+
+.vl-aim-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--display);
+  font-size: 13px;
+  letter-spacing: 0.09em;
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--line-soft);
+  color: #ffe9c4;
+}
+
+.vl-aim-glyph {
+  color: var(--red);
+}
+
+.vl-aim-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px 6px;
+  padding: 7px 0;
+}
+
+.vl-aim-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.vl-aim-cell span {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  color: var(--dimmer);
+}
+
+.vl-aim-cell b {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text);
+}
+
+.vl-aim-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: baseline;
+  font-size: 10.5px;
+  padding-top: 6px;
+  border-top: 1px solid var(--line-soft);
+}
+
+/* ------------------------------------------------------------------ toasts */
+
+.vl-toast {
+  position: absolute;
+  top: 68px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  z-index: 32;
+}
+
+.vl-toast-item {
+  font-family: var(--display);
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 6px 16px;
+  background: rgba(5, 11, 18, 0.82);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+  white-space: nowrap;
+}
+
+.vl-toast-item.is-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* -------------------------------------------------------------- full screens */
+
+.vl-screen {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  padding: 46px 24px 60px;
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(10, 26, 44, 0.86) 0%, rgba(4, 8, 14, 0.94) 55%, rgba(3, 6, 10, 0.97) 100%);
+  backdrop-filter: blur(3px);
+}
+
+.vl-screen::-webkit-scrollbar {
+  width: 9px;
+}
+
+.vl-screen::-webkit-scrollbar-thumb {
+  background: rgba(103, 158, 199, 0.3);
+}
+
+.vl-hero {
+  text-align: center;
+  max-width: 780px;
+}
+
+.vl-hero-kicker {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.34em;
+  color: var(--cyan);
+  margin: 0 0 10px;
+}
+
+.vl-hero-title {
+  font-family: var(--display);
+  font-size: clamp(38px, 7.6vw, 76px);
+  line-height: 0.96;
+  letter-spacing: 0.16em;
+  margin: 0;
+  display: flex;
+  gap: 0.28em;
+  justify-content: center;
+  flex-wrap: wrap;
+  color: #eaf7ff;
+}
+
+.vl-hero-word-accent {
+  color: var(--cyan);
+  text-shadow: 0 0 42px rgba(79, 214, 255, 0.45);
+}
+
+.vl-hero-sub {
+  margin: 16px auto 0;
+  max-width: 62ch;
+  color: var(--dim);
+  font-size: 13.5px;
+}
+
+.vl-block {
+  width: min(1080px, 100%);
+  border: 1px solid var(--line-soft);
+  border-radius: 3px;
+  background: rgba(8, 15, 24, 0.66);
+  padding: 14px 16px 16px;
+}
+
+.vl-block-title {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.26em;
+  color: var(--dimmer);
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.vl-diff-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 10px;
+}
+
+.vl-diff {
+  text-align: left;
+  background: rgba(12, 22, 35, 0.8);
+  border: 1px solid var(--line-soft);
+  border-radius: 3px;
+  color: var(--text);
+  padding: 11px 13px 12px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.14s ease, background 0.14s ease;
+}
+
+.vl-diff:hover {
+  border-color: var(--cyan);
+}
+
+.vl-diff.is-on {
+  border-color: var(--amber);
+  background: rgba(42, 32, 12, 0.7);
+  box-shadow: inset 0 0 0 1px rgba(255, 196, 92, 0.28);
+}
+
+.vl-diff-name {
+  font-family: var(--display);
+  font-size: 17px;
+  letter-spacing: 0.14em;
+  margin: 0 0 4px;
+}
+
+.vl-diff.is-on .vl-diff-name {
+  color: var(--amber);
+}
+
+.vl-diff-desc {
+  margin: 0;
+  font-size: 12px;
+  color: var(--dim);
+  min-height: 3.6em;
+}
+
+.vl-diff-meta {
+  margin: 8px 0 0;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--dimmer);
+}
+
+.vl-roster-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(258px, 1fr));
+  gap: 10px;
+}
+
+.vl-roster-card {
+  --accent: var(--cyan);
+  background: rgba(10, 19, 30, 0.8);
+  border: 1px solid var(--line-soft);
+  border-top: 2px solid var(--accent);
+  border-radius: 3px;
+  padding: 11px 12px 12px;
+}
+
+.vl-roster-head {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.vl-roster-glyph {
+  font-size: 22px;
+  color: var(--accent);
+  width: 30px;
+  text-align: center;
+}
+
+.vl-roster-name {
+  font-family: var(--display);
+  font-size: 16px;
+  letter-spacing: 0.12em;
+  margin: 0;
+}
+
+.vl-roster-role {
+  margin: 1px 0 0;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--dimmer);
+}
+
+.vl-roster-blurb {
+  margin: 9px 0 0;
+  font-size: 11.5px;
+  color: var(--dim);
+  line-height: 1.45;
+}
+
+.vl-roster-weapons {
+  margin: 9px 0 0;
+  padding: 9px 0 0;
+  border-top: 1px solid var(--line-soft);
+  list-style: none;
+  font-size: 11px;
+  color: #a3bdd1;
+}
+
+.vl-roster-weapons li {
+  padding: 2px 0 2px 12px;
+  position: relative;
+}
+
+.vl-roster-weapons li::before {
+  content: "›";
+  position: absolute;
+  left: 2px;
+  color: var(--dimmer);
+}
+
+.vl-roster-sys {
+  color: #c9b6ff !important;
+}
+
+.vl-rules {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+  font-size: 12.5px;
+  color: #a9c2d5;
+}
+
+.vl-rules li {
+  padding-left: 20px;
+  position: relative;
+}
+
+.vl-rules li::before {
+  content: "◆";
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 9px;
+  color: var(--cyan);
+}
+
+.vl-screen-cta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding-bottom: 8px;
+}
+
+/* panels (controls sheet + after-action) */
+
+.vl-panel {
+  width: min(820px, 100%);
+  background: rgba(7, 14, 23, 0.94);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 20px 22px 18px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+}
+
+.vl-panel-title {
+  font-family: var(--display);
+  font-size: 22px;
+  letter-spacing: 0.28em;
+  margin: 0 0 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.vl-keys {
+  display: grid;
+  gap: 2px;
+}
+
+.vl-key-row {
+  display: grid;
+  grid-template-columns: 168px 1fr;
+  gap: 12px;
+  align-items: baseline;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(103, 158, 199, 0.08);
+}
+
+.vl-key {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--cyan);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  padding: 2px 7px;
+  justify-self: start;
+  white-space: nowrap;
+}
+
+.vl-key-desc {
+  font-size: 12.5px;
+  color: #a9c2d5;
+}
+
+.vl-panel-foot {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.vl-result-head {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.vl-result-head.is-victory .vl-result-title {
+  color: var(--good);
+  text-shadow: 0 0 34px rgba(125, 255, 177, 0.35);
+}
+
+.vl-result-head.is-defeat .vl-result-title {
+  color: var(--red);
+  text-shadow: 0 0 34px rgba(255, 90, 104, 0.3);
+}
+
+.vl-result-head.is-draw .vl-result-title {
+  color: var(--amber);
+}
+
+.vl-result-kicker {
+  margin: 0 0 2px;
+  font-size: 12.5px;
+  color: var(--dim);
+  max-width: 46ch;
+}
+
+.vl-result-title {
+  font-family: var(--display);
+  font-size: clamp(30px, 5vw, 46px);
+  letter-spacing: 0.24em;
+  margin: 0;
+}
+
+.vl-rank {
+  margin-left: auto;
+  text-align: right;
+}
+
+.vl-rank-letter {
+  display: block;
+  font-family: var(--display);
+  font-size: 46px;
+  line-height: 1;
+  color: var(--amber);
+}
+
+.vl-rank-score {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: var(--dim);
+}
+
+.vl-result-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+  padding: 16px 0;
+}
+
+.vl-rstat {
+  background: rgba(11, 21, 34, 0.8);
+  border: 1px solid var(--line-soft);
+  border-radius: 2px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.vl-rstat span {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  letter-spacing: 0.16em;
+  color: var(--dimmer);
+}
+
+.vl-rstat b {
+  font-family: var(--mono);
+  font-size: 17px;
+  color: #e4f3ff;
+}
+
+.vl-board {
+  padding-top: 6px;
+}
+
+.vl-board-row {
+  display: grid;
+  grid-template-columns: 22px minmax(120px, 1.4fr) 1fr 84px 78px;
+  gap: 10px;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(103, 158, 199, 0.08);
+  font-size: 12px;
+}
+
+.vl-board-glyph {
+  color: var(--cyan);
+  text-align: center;
+}
+
+.vl-board-row.is-enemy .vl-board-glyph {
+  color: var(--red);
+}
+
+.vl-board-row.is-dead {
+  opacity: 0.45;
+}
+
+.vl-board-name {
+  font-family: var(--display);
+  letter-spacing: 0.07em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vl-board-bar {
+  height: 6px;
+  background: rgba(120, 170, 210, 0.13);
+  overflow: hidden;
+}
+
+.vl-board-bar > i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #2b7f9e, #6fd8ff);
+}
+
+.vl-board-row.is-enemy .vl-board-bar > i {
+  background: linear-gradient(90deg, #8e3440, #ff7c88);
+}
+
+.vl-board-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  text-align: right;
+}
+
+/* ------------------------------------------------------------- responsive */
+
+@media (max-width: 1420px) {
+  .vl-inspector,
+  .vl-log {
+    width: 310px;
+  }
+}
+
+@media (max-width: 1180px) {
+  .vl-log {
+    display: none;
+  }
+  .vl-inspector {
+    width: 288px;
+  }
+  .vl-card {
+    width: 132px;
+  }
+}
+
+@media (max-width: 900px) {
+  .vl-fleets {
+    display: none;
+  }
+  .vl-inspector {
+    top: 64px;
+    width: 262px;
+    max-height: calc(100vh - 220px);
+  }
+  .vl-card {
+    width: 112px;
+  }
+  .vl-card-name {
+    font-size: 11px;
+  }
+  .vl-board-row {
+    grid-template-columns: 20px 1fr 70px;
+  }
+  .vl-board-bar,
+  .vl-board-num:last-child {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.01ms !important;
+  }
+}

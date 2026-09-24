@@ -1,0 +1,12 @@
+# Dependencies
+node_modules/
+
+# Qwen working files / test artifacts
+.qwen/
+
+# Logs
+*.log
+
+# OS/editor junk
+.DS_Store
+Thumbs.db

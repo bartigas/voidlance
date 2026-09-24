@@ -1,0 +1,21 @@
+{
+  "name": "void-lance",
+  "version": "1.0.0",
+  "description": "Void Lance — a turn-based 2.5D space fleet battle built with Three.js and WebGL.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "vendor": "node scripts/vendor-three.mjs",
+    "test": "node --test \"tests/*.test.mjs\"",
+    "serve": "python3 -m http.server 4173 --directory .",
+    "smoke": "node scripts/smoke.mjs"
+  },
+  "keywords": ["game", "three.js", "webgl", "turn-based", "tactics"],
+  "license": "ISC",
+  "dependencies": {
+    "three": "^0.171.0"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^23.11.1"
+  }
+}

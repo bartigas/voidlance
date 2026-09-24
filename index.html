@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Void Lance — turn-based fleet tactics</title>
+<meta name="description" content="Void Lance: a turn-based 2.5D space fleet battle, five ships against five, rendered with Three.js and WebGL." />
+<meta name="color-scheme" content="dark" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23070c14'/%3E%3Cpath d='M16 3l9 13-9 13-9-13z' fill='none' stroke='%234fd6ff' stroke-width='2.4'/%3E%3Cpath d='M16 9.5l4.5 6.5-4.5 6.5-4.5-6.5z' fill='%23ffb03a'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="./styles/ui.css" />
+<script type="importmap">
+{
+  "imports": {
+    "three": "./vendor/three/three.module.js",
+    "three/addons/": "./vendor/three/addons/"
+  }
+}
+</script>
+</head>
+<body>
+  <canvas id="stage" aria-label="Battlefield"></canvas>
+
+  <div id="hud" class="vl-root"></div>
+
+  <div id="screens" class="vl-screens">
+    <div class="vl-boot">
+      <p class="vl-boot-title">VOID LANCE</p>
+      <p class="vl-boot-note">Spinning up the drive core…</p>
+    </div>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+  <script nomodule>
+    document.querySelector('.vl-boot-note').textContent =
+      'This browser does not support JavaScript modules. A current Chrome, Edge, Firefox or Safari build is required.';
+  </script>
+</body>
+</html>
